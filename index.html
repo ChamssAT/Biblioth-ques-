@@ -1,0 +1,526 @@
+<!doctype html>
+<html>
+<head>
+<!--<base href="https://library.school.edu/app/">-->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Système de Gestion de Bibliothèque Futuriste</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #000;
+            color: #fff;
+        }
+        .navbar {
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #1a1a1a;
+        }
+        .navbar-brand, .nav-link {
+            color: #0ff !important;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .card {
+            background-color: rgba(10, 10, 10, 0.8);
+            border: 1px solid #1a1a1a;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            margin-bottom: 20px;
+        }
+        .btn-primary {
+            background-color: #0ff;
+            border-color: #0ff;
+            color: #000;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #00cccc;
+            border-color: #00cccc;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+        }
+        .table {
+            color: #fff;
+        }
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 255, 255, 0.1);
+        }
+        .form-control, .form-select {
+            background-color: rgba(30, 30, 30, 0.8);
+            border: 1px solid #333;
+            color: #0ff;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: rgba(40, 40, 40, 0.8);
+            border-color: #0ff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            color: #0ff;
+        }
+        .form-control::placeholder, .form-select::placeholder {
+            color: #0ff;
+            opacity: 0.7;
+        }
+        h2, h5 {
+            color: #0ff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        @keyframes glow {
+            0% { box-shadow: 0 0 5px rgba(0, 255, 255, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.8); }
+            100% { box-shadow: 0 0 5px rgba(0, 255, 255, 0.5); }
+        }
+        .glow {
+            animation: glow 2s infinite;
+        }
+        .form-label {
+            color: #0ff;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .modal-content {
+            background-color: rgba(10, 10, 10, 0.9);
+            border: 1px solid #1a1a1a;
+            border-radius: 15px;
+            color: #fff;
+        }
+        .modal-header, .modal-footer {
+            border-color: #1a1a1a;
+        }
+        .modal-title {
+            color: #0ff;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">CSP AVENIR</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" @click="currentView = 'students'">Étudiants</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" @click="currentView = 'books'">Livres</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" @click="currentView = 'loans'">Emprunts</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container mt-4">
+            <!-- Vue Étudiants -->
+            <div v-if="currentView === 'students'">
+                <h2>SYSTEME DE GESTION DE  BIBLIOTHEQUE</h2>
+                <div class="card p-3 mb-4">
+                    <h5>Ajouter un étudiant</h5>
+                    <form @submit.prevent="addStudent">
+                        <div class="mb-3">
+                            <label for="studentName" class="form-label">Nom complet</label>
+                            <input v-model="newStudent.name" type="text" class="form-control" id="studentName" placeholder="Entrez le nom complet" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="studentId" class="form-label">Numéro d'identification</label>
+                            <input v-model="newStudent.id" type="text" class="form-control" id="studentId" placeholder="Entrez le numéro d'identification" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="studentClass" class="form-label">Classe/Niveau</label>
+                            <input v-model="newStudent.class" type="text" class="form-control" id="studentClass" placeholder="Entrez la classe ou le niveau" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Ajouter</button>
+                    </form>
+                </div>
+                <div class="card p-3">
+                    <h5>Liste des étudiants</h5>
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>ID</th>
+                                <th>Classe</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="student in students" :key="student.id">
+                                <td>{{ student.name }}</td>
+                                <td>{{ student.id }}</td>
+                                <td>{{ student.class }}</td>
+                                <td>
+                                    <button @click="editStudent(student)" class="btn btn-sm btn-primary me-2">Modifier</button>
+                                    <button @click="confirmDeleteStudent(student)" class="btn btn-sm btn-danger">Supprimer</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Vue Livres -->
+            <div v-if="currentView === 'books'">
+                <h2>Gestion des Livres</h2>
+                <div class="card p-3 mb-4">
+                    <h5>Ajouter un livre</h5>
+                    <form @submit.prevent="addBook">
+                        <div class="mb-3">
+                            <label for="bookTitle" class="form-label">Titre</label>
+                            <input v-model="newBook.title" type="text" class="form-control" id="bookTitle" placeholder="Entrez le titre du livre" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="bookAuthor" class="form-label">Auteur</label>
+                            <input v-model="newBook.author" type="text" class="form-control" id="bookAuthor" placeholder="Entrez l'auteur du livre" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="bookIsbn" class="form-label">ISBN</label>
+                            <input v-model="newBook.isbn" type="text" class="form-control" id="bookIsbn" placeholder="Entrez l'ISBN du livre" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="bookCategory" class="form-label">Catégorie</label>
+                            <select v-model="newBook.category" class="form-select" id="bookCategory" required>
+                                <option value="">Sélectionnez une catégorie</option>
+                                <option value="roman">Roman</option>
+                                <option value="manuel scolaire">Manuel scolaire</option>
+                                <option value="documentaire">Documentaire</option>
+                                <option value="autre">Autre</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="bookCopies" class="form-label">Nombre d'exemplaires</label>
+                            <input v-model.number="newBook.copies" type="number" class="form-control" id="bookCopies" min="1" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Ajouter</button>
+                    </form>
+                </div>
+                <div class="card p-3">
+                    <h5>Liste des livres</h5>
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Titre</th>
+                                <th>Auteur</th>
+                                <th>ISBN</th>
+                                <th>Catégorie</th>
+                                <th>Exemplaires</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="book in books" :key="book.isbn">
+                                <td>{{ book.title }}</td>
+                                <td>{{ book.author }}</td>
+                                <td>{{ book.isbn }}</td>
+                                <td>{{ book.category }}</td>
+                                <td>{{ book.copies }}</td>
+                                <td>
+                                    <button @click="editBook(book)" class="btn btn-sm btn-primary me-2">Modifier</button>
+                                    <button @click="deleteBook(book)" class="btn btn-sm btn-danger">Supprimer</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Vue Emprunts -->
+            <div v-if="currentView === 'loans'">
+                <h2>Gestion des Emprunts</h2>
+                <div class="card p-3 mb-4">
+                    <h5>Ajouter un emprunt</h5>
+                    <form @submit.prevent="addLoan">
+                        <div class="mb-3">
+                            <label for="loanStudentId" class="form-label">Étudiant</label>
+                            <select v-model="newLoan.studentId" class="form-select" id="loanStudentId" required>
+                                <option value="">Sélectionnez un étudiant</option>
+                                <option v-for="student in students" :key="student.id" :value="student.id">
+                                    {{ student.name }} ({{ student.id }})
+                                </option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="loanBookIsbn" class="form-label">Livre</label>
+                            <select v-model="newLoan.bookIsbn" class="form-select" id="loanBookIsbn" required>
+                                <option value="">Sélectionnez un livre</option>
+                                <option v-for="book in availableBooks" :key="book.isbn" :value="book.isbn">
+                                    {{ book.title }} par {{ book.author }} ({{ book.copies }} disponible(s))
+                                </option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="loanDate" class="form-label">Date d'emprunt</label>
+                            <input v-model="newLoan.loanDate" type="date" class="form-control" id="loanDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="returnDate" class="form-label">Date de retour prévue</label>
+                            <input v-model="newLoan.returnDate" type="date" class="form-control" id="returnDate" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Ajouter</button>
+                    </form>
+                </div>
+                <div class="card p-3">
+                    <h5>Liste des emprunts actifs</h5>
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Étudiant</th>
+                                <th>Livre</th>
+                                <th>Date d'emprunt</th>
+                                <th>Date de retour prévue</th>
+                                <th>Statut</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="loan in activeLoans" :key="loan.id" :class="{ 'table-danger': isOverdue(loan) }">
+                                <td>{{ getStudentName(loan.studentId) }}</td>
+                                <td>{{ getBookTitle(loan.bookIsbn) }}</td>
+                                <td>{{ loan.loanDate }}</td>
+                                <td>{{ loan.returnDate }}</td>
+                                <td>{{ isOverdue(loan) ? 'En retard' : 'À temps' }}</td>
+                                <td>
+                                    <button @click="returnBook(loan)" class="btn btn-sm btn-success">Retourner</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de confirmation de suppression -->
+        <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteConfirmModalLabel">Confirmer la suppression</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Êtes-vous sûr de vouloir supprimer cet étudiant ?</p>
+                        <div class="mb-3">
+                            <label for="deletePassword" class="form-label">Mot de passe de confirmation</label>
+                            <input v-model="deletePassword" type="password" class="form-control" id="deletePassword" placeholder="Entrez le mot de passe">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button @click="deleteStudent" type="button" class="btn btn-danger">Supprimer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de confirmation de retour -->
+        <div class="modal fade" id="returnConfirmModal" tabindex="-1" aria-labelledby="returnConfirmModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="returnConfirmModalLabel">Confirmer le retour</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Êtes-vous sûr de vouloir retourner ce livre ?</p>
+                        <div class="mb-3">
+                            <label for="returnPassword" class="form-label">Mot de passe de confirmation</label>
+                            <input v-model="returnPassword" type="password" class="form-control" id="returnPassword" placeholder="Entrez le mot de passe">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button @click="confirmReturn" type="button" class="btn btn-success">Confirmer le retour</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de confirmation de suppression du livre -->
+        <div class="modal fade" id="deleteBookConfirmModal" tabindex="-1" aria-labelledby="deleteBookConfirmModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteBookConfirmModalLabel">Confirmer la suppression du livre</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Êtes-vous sûr de vouloir supprimer ce livre ?</p>
+                        <div class="mb-3">
+                            <label for="deleteBookPassword" class="form-label">Mot de passe de confirmation</label>
+                            <input v-model="deleteBookPassword" type="password" class="form-control" id="deleteBookPassword" placeholder="Entrez le mot de passe">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button @click="confirmDeleteBook" type="button" class="btn btn-danger">Supprimer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue
+
+        createApp({
+            data() {
+                return {
+                    currentView: 'students',
+                    students: [],
+                    books: [],
+                    loans: [],
+                    newStudent: { name: '', id: '', class: '' },
+                    newBook: { title: '', author: '', isbn: '', category: '', copies: 1 },
+                    newLoan: { studentId: '', bookIsbn: '', loanDate: '', returnDate: '' },
+                    deletePassword: '',
+                    studentToDelete: null,
+                    deleteModal: null,
+                    returnPassword: '',
+                    loanToReturn: null,
+                    returnModal: null,
+                    deleteBookPassword: '',
+                    bookToDelete: null,
+                    deleteBookModal: null,
+                }
+            },
+            computed: {
+                availableBooks() {
+                    return this.books.filter(book => book.copies > 0)
+                },
+                activeLoans() {
+                    return this.loans.filter(loan => !loan.returned)
+                }
+            },
+            methods: {
+                addStudent() {
+                    this.students.push({ ...this.newStudent })
+                    this.newStudent = { name: '', id: '', class: '' }
+                    this.saveData()
+                },
+                editStudent(student) {
+                    console.log('Editing student:', student)
+                    this.saveData()
+                },
+                confirmDeleteStudent(student) {
+                    this.studentToDelete = student
+                    this.deletePassword = ''
+                    this.deleteModal.show()
+                },
+                deleteStudent() {
+                    if (this.deletePassword === '1234') {
+                        const index = this.students.findIndex(s => s.id === this.studentToDelete.id)
+                        if (index !== -1) {
+                            this.students.splice(index, 1)
+                            this.saveData()
+                        }
+                        this.deleteModal.hide()
+                    } else {
+                        alert('Mot de passe incorrect. La suppression a été annulée.')
+                    }
+                },
+                addBook() {
+                    this.books.push({ ...this.newBook })
+                    this.newBook = { title: '', author: '', isbn: '', category: '', copies: 1 }
+                    this.saveData()
+                },
+                editBook(book) {
+                    console.log('Editing book:', book)
+                    this.saveData()
+                },
+                deleteBook(book) {
+                    this.bookToDelete = book;
+                    this.deleteBookPassword = '';
+                    this.deleteBookModal.show();
+                },
+                confirmDeleteBook() {
+                    if (this.deleteBookPassword === '1234') {
+                        const index = this.books.findIndex(b => b.isbn === this.bookToDelete.isbn);
+                        if (index !== -1) {
+                            this.books.splice(index, 1);
+                            this.saveData();
+                        }
+                        this.deleteBookModal.hide();
+                    } else {
+                        alert('Mot de passe incorrect. La suppression a été annulée.');
+                    }
+                },
+                addLoan() {
+                    const loan = { ...this.newLoan, id: Date.now(), returned: false }
+                    this.loans.push(loan)
+                    const book = this.books.find(b => b.isbn === loan.bookIsbn)
+                    if (book) {
+                        book.copies--
+                    }
+                    this.newLoan = { studentId: '', bookIsbn: '', loanDate: '', returnDate: '' }
+                    this.saveData()
+                },
+                returnBook(loan) {
+                    this.loanToReturn = loan;
+                    this.returnPassword = '';
+                    this.returnModal.show();
+                },
+                confirmReturn() {
+                    if (this.returnPassword === '1234') {
+                        const loan = this.loanToReturn;
+                        loan.returned = true;
+                        const book = this.books.find(b => b.isbn === loan.bookIsbn);
+                        if (book) {
+                            book.copies++;
+                        }
+                        this.saveData();
+                        this.returnModal.hide();
+                    } else {
+                        alert('Mot de passe incorrect. Le retour a été annulé.');
+                    }
+                },
+                getStudentName(studentId) {
+                    const student = this.students.find(s => s.id === studentId)
+                    return student ? student.name : 'Inconnu'
+                },
+                getBookTitle(bookIsbn) {
+                    const book = this.books.find(b => b.isbn === bookIsbn)
+                    return book ? book.title : 'Inconnu'
+                },
+                isOverdue(loan) {
+                    const today = new Date()
+                    const returnDate = new Date(loan.returnDate)
+                    return today > returnDate && !loan.returned
+                },
+                saveData() {
+                    localStorage.setItem('libraryData', JSON.stringify({
+                        students: this.students,
+                        books: this.books,
+                        loans: this.loans
+                    }))
+                },
+                loadData() {
+                    const savedData = localStorage.getItem('libraryData')
+                    if (savedData) {
+                        const parsedData = JSON.parse(savedData)
+                        this.students = parsedData.students || []
+                        this.books = parsedData.books || []
+                        this.loans = parsedData.loans || []
+                    }
+                }
+            },
+            mounted() {
+                this.loadData();
+                this.deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+                this.returnModal = new bootstrap.Modal(document.getElementById('returnConfirmModal'));
+                this.deleteBookModal = new bootstrap.Modal(document.getElementById('deleteBookConfirmModal'));
+            }
+        }).mount('#app')
+    </script>
+</body>
+</html>
